@@ -1,5 +1,9 @@
 import type { NextConfig } from 'next';
 
+const apiOrigin = new URL(
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080',
+).origin;
+
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
@@ -27,7 +31,7 @@ const nextConfig: NextConfig = {
               "img-src 'self' data: blob: https://*.googleusercontent.com https://www.gstatic.com https://wearlyshop.onrender.com https://res.cloudinary.com https://*.cloudinary.com",
               "font-src 'self' data: https://fonts.gstatic.com",
               "frame-src 'self' https://accounts.google.com https://apis.google.com",
-              "connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://www.googleapis.com https://wearlyshop.onrender.com",
+              `connect-src 'self' https://accounts.google.com https://oauth2.googleapis.com https://www.googleapis.com ${apiOrigin}`,
             ].join('; '),
           },
         ],
