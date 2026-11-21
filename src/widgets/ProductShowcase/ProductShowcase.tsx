@@ -2,10 +2,12 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import StarRating from '@/widgets/StarRating/StarRating';
 import WishlistButton from '@/features/wishlist/ui/WishlistButton/WishlistButton';
 import { useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useCartDrawer } from '@/features/cart/context/CartDrawerContext';
 import { useTranslation } from '@/i18n/useTranslation';
 import { addToCart } from '@/store/slices/cartSlice';
@@ -81,7 +83,39 @@ export default function ProductShowcase({
 }: ProductShowcaseProps) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
   const { openCart } = useCartDrawer();
+
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      router.push('/login');
+      return;
+    }
+    const numericProductId = Number(productId);
+    if (!Number.isFinite(numericProductId)) return;
+
+    const sizeLabel = sizes.find((item) => item.id === selectedSizeId)?.name ?? '';
+    const colorLabel = colors.find((item) => item.id === selectedColorId)?.name ?? '';
+
+    dispatch(
+      addToCart({
+        productId: numericProductId,
+        variantId: variantId ?? 0,
+        quantity: 1,
+        brand,
+        title,
+        price: price.current,
+        currency: price.currency,
+        imageSrc: images.main.front.src,
+        imageAlt: images.main.front.alt,
+        sku: code,
+        color: colorLabel,
+        size: sizeLabel,
+      }),
+    );
+    router.push('/checkout');
+  };
 
   const infoTabs = useMemo(
     () => [
@@ -405,6 +439,7 @@ export default function ProductShowcase({
             <button
               type="button"
               className="inline-flex h-12 w-full items-center justify-center rounded-[10px] border border-black bg-black px-6 font-sans text-[16px] font-medium text-white-fa transition-opacity duration-200 hover:opacity-90 sm:w-auto sm:min-w-35"
+              onClick={handleBuyNow}
             >
               {t.product.buyNow}
             </button>
